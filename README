@@ -1,0 +1,48 @@
+********************************************** README **********************************************               
+====================================================================================================
+ * DESCRIPTION *
+
+  rinject is a toolset created to make it easy to:
+	1. Inject a shared library file into a running process, and properly resolve its symbols
+	2. Replace an unresolved symbol(function call) in the address space of the running process 
+              with another symbol
+	3. Call a symbol one time from within the running process.
+
+  NOTE: As of right now, only 64 bit applications are supported.
+
+
+
+ * USAGE *
+
+  1. Injecting a library:
+       ./inject dlopen <pid> <library_path>
+
+       Notes:
+         library_path -> must be a full absolute pathname!
+       
+       Common Errors:
+         * No such Process: Make sure you have admin rights over <pid> process.
+                            Make sure the process exists.
+
+
+  2. Replacing a Symbol:
+       ./inject remap <pid> <libname:original_symbol> <libname:new_symbol>
+
+      Notes:
+        libname -> optional parameter! 
+		 missing on original_symbol: inject will scan all of the entries in /proc/[pid]/maps
+                                             and attempt to replace all instances of original_symbol
+
+                 missing on new_symbol: inject will find the first instance of new_symbol and use it.
+
+      Common Errors:
+        * Error remapping symbol in <symbol_path>: Invalid argument: 
+                            Make sure you are replacing a symbol that exists in .dynsym
+			    (to check try readelf -a <symbol_path> and look at the .dynsym section)
+
+        * Oops -- Original symbol <original_symbol> not found in <libname>.
+	       	  	    Make sure your symbols names are exactly as they should be.
+
+
+  3. Calling a Function:
+       ./inject call <pid> <symbol_name> <argument>
